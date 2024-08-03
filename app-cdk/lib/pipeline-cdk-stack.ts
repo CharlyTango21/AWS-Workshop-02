@@ -13,12 +13,21 @@ export class MyPipelineStack extends cdk.Stack {
     const githubSecret = secretsmanager.Secret.fromSecretNameV2(this, 'GitHubSecret', 'github/personal_access_token');
 
     // Crea un proyecto de CodeBuild
-    const buildProject = new codebuild.PipelineProject(this, 'BuildProject', {
-      buildSpec: codebuild.BuildSpec.fromSourceFilename('buildspec.yml'),
+    const buildProject = new codebuild.PipelineProject(this, 'CodeBuild', {
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
+        privileged: true,
+        computeType: codebuild.ComputeType.LARGE,
+      },
+      buildSpec: codebuild.BuildSpec.fromSourceFilename('buildspec_test.yml'),
     });
+    // const buildProject = new codebuild.PipelineProject(this, 'BuildProject', {
+    //   buildSpec: codebuild.BuildSpec.fromSourceFilename('buildspec.yml'),
+    // });
 
     // Define los artefactos
     const sourceOutput = new codepipeline.Artifact();
+    const unitTestOutput = new codepipeline.Artifact();
     const buildOutput = new codepipeline.Artifact();
 
     // Define el pipeline
@@ -37,6 +46,19 @@ export class MyPipelineStack extends cdk.Stack {
           branch: 'main', // o la rama que prefieras
           oauthToken: githubSecret.secretValue,
           output: sourceOutput,
+        }),
+      ],
+    });
+
+    // Agrega la etapa de pruebas unitarias
+    pipeline.addStage({
+      stageName: 'Code-Quality-Testing',
+      actions: [
+        new codepipeline_actions.CodeBuildAction({
+          actionName: 'Unit-Test',
+          project: buildProject,
+          input: sourceOutput,
+          outputs: [unitTestOutput],
         }),
       ],
     });
