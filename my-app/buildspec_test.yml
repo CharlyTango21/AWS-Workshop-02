@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: latest
+  pre_build:
+    commands:
+      - cd ./my-app
+      - echo Installing npm packages...
+      - npm install
+  build:
+    commands:
+      - echo run tests...
+      - CI=true npm run test
