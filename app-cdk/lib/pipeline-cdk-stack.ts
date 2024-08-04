@@ -6,6 +6,7 @@ import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 
 interface ConsumerProps extends cdk.StackProps {
   ecrRepository: ecr.Repository,
@@ -64,6 +65,30 @@ export class MyPipelineStack extends cdk.Stack {
     });
 
     dockerBuild.addToRolePolicy(dockerBuildRolePolicy);
+
+    const signerARNParameter = new ssm.StringParameter(this, 'SignerARNParam', {
+      parameterName: 'signer-profile-arn',
+      stringValue: '{Signing Profile ARN}',
+    });
+
+    const signerParameterPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      resources: [signerARNParameter.parameterArn],
+      actions: ['ssm:GetParametersByPath', 'ssm:GetParameters'],
+    });
+
+    const signerPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      resources: ['*'],
+      actions: [
+        'signer:PutSigningProfile',
+        'signer:SignPayload',
+        'signer:GetRevocationStatus',
+      ],
+    });
+
+    dockerBuild.addToRolePolicy(signerParameterPolicy);
+    dockerBuild.addToRolePolicy(signerPolicy);
 
     // Define los artefactos
     const sourceOutput = new codepipeline.Artifact();
