@@ -68,7 +68,7 @@ export class MyPipelineStack extends cdk.Stack {
 
     const signerARNParameter = new ssm.StringParameter(this, 'SignerARNParam', {
       parameterName: 'signer-profile-arn',
-      stringValue: '{Signing Profile ARN}',
+      stringValue: 'arn:aws:signer:us-east-1:439827524136:/signing-profiles/ecr_signing_profile'
     });
 
     const signerParameterPolicy = new iam.PolicyStatement({
