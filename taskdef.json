@@ -14,7 +14,7 @@
             "essential": true
         }
     ],
-    "family": "arn:aws:ecs:us-east-1:439827524136:task-definition/prodappstackprodFargateServiceTaskDefE883E3CC:3",
+    "family": "439827524136.dkr.ecr.us-east-1.amazonaws.com/ecr-stack-myapp4aca6506-xnbeybdbgkh9:latest",
     "requiresCompatibilities": [
         "FARGATE"
     ],
