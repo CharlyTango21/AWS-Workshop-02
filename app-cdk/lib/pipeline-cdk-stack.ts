@@ -16,7 +16,6 @@ interface ConsumerProps extends cdk.StackProps {
 }
 
 export class MyPipelineStack extends cdk.Stack {
-  // constructor(scope: Construct, id: string, props?: cdk.StackProps) {
   constructor(scope: Construct, id: string, props: ConsumerProps) {
     super(scope, id, props);
 
@@ -170,7 +169,7 @@ export class MyPipelineStack extends cdk.Stack {
       ]
     });
 
-    // Agrega validacion manual
+    //Agrega validacion manual
     pipeline.addStage({
       stageName: 'Deploy-Production',
       actions: [
