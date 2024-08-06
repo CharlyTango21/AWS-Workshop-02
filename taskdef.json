@@ -1,5 +1,5 @@
 {
-    "executionRoleArn": "arn:aws:iam::439827524136:role/prod-app-stack-prodFargateServiceTaskDefTaskRole114-RcxFEGk5QXy1",
+    "executionRoleArn": "arn:aws:iam::439827524136:role/prod-app-stack-prodFargateServiceTaskDefExecutionRo-PDTXmko4PNLK",
     "containerDefinitions": [
         {
             "name": "my-app",
@@ -14,7 +14,7 @@
             "essential": true
         }
     ],
-    "family": "439827524136.dkr.ecr.us-east-1.amazonaws.com/ecr-stack-myapp4aca6506-xnbeybdbgkh9:latest",
+    "family": "prodappstackprodFargateServiceTaskDefE883E3CC",
     "requiresCompatibilities": [
         "FARGATE"
     ],
