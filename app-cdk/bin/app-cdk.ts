@@ -14,4 +14,5 @@ const testCdkStack = new AppCdkStack(app, 'test', {
 
 const pipelineCdkStack = new MyPipelineStack(app, 'MyPipelineStack', {
   ecrRepository: ecrCdkStack.repository,
+  fargateServiceTest: testCdkStack.fargateService,
 });
