@@ -1,9 +1,9 @@
 {
-    "executionRoleArn": "arn:aws:iam::<ACCOUNT>:role/<ECS-TASKDEF-EXECUTION-ROLE>",
+    "executionRoleArn": "arn:aws:iam::439827524136:role/prod-app-stack-prodFargateServiceTaskDefTaskRole114-RcxFEGk5QXy1",
     "containerDefinitions": [
         {
             "name": "my-app",
-            "image": "<ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com/<ECR-IMAGE>:latest",
+            "image": "439827524136.dkr.ecr.us-east-1.amazonaws.com/ecr-stack-myapp4aca6506-xnbeybdbgkh9:latest",
             "portMappings": [
                 {
                     "containerPort": 8081,
@@ -14,7 +14,7 @@
             "essential": true
         }
     ],
-    "family": "<ECS-TASKDEF-FAMILY-NAME>",
+    "family": "arn:aws:ecs:us-east-1:439827524136:task-definition/prodappstackprodFargateServiceTaskDefE883E3CC:3",
     "requiresCompatibilities": [
         "FARGATE"
     ],
