@@ -22,7 +22,7 @@ phases:
       - cd ./my-app
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t myapp:$IMAGE_TAG .
+      - docker BreakTheBuild
       - docker tag myapp:$IMAGE_TAG $IMAGE_REPO_URI:$IMAGE_TAG
   post_build:
     commands:

@@ -11,6 +11,12 @@ import * as ecsPatterns from 'aws-cdk-lib/aws-ecs-patterns';
 import * as codedeploy from 'aws-cdk-lib/aws-codedeploy';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as subscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
+import { Rule, EventPattern } from 'aws-cdk-lib/aws-events';
+import * as events from 'aws-cdk-lib/aws-events';
+
 
 interface ConsumerProps extends StackProps {
   ecrRepository: ecr.Repository,
@@ -226,14 +232,102 @@ export class MyPipelineStack extends Stack {
         }),
       ],
     });
+    const buildsCount = new cloudwatch.SingleValueWidget({
+      title: 'Total Builds',
+      width: 6,
+      height: 6,
+      metrics: [
+        new cloudwatch.Metric({
+          namespace: 'AWS/CodeBuild',
+          metricName: 'Builds',
+          statistic: 'sum',
+          label: 'Builds',
+          period: Duration.days(30),
+        }),
+      ],
+    });
+    const averageDuration = new cloudwatch.GaugeWidget({
+      title: 'Average Build Time',
+      width: 6,
+      height: 6,
+      metrics: [
+        new cloudwatch.Metric({
+          namespace: 'AWS/CodeBuild',
+          metricName: 'Duration',
+          statistic: 'avg',
+          label: 'Duration',
+          period: Duration.hours(1),
+        }),
+      ],
+      leftYAxis: {
+        min: 0,
+        max: 300,
+      },
+    });
+    const queuedDuration = new cloudwatch.GaugeWidget({
+      title: 'Build Queue Duration',
+      width: 6,
+      height: 6,
+      metrics: [
+        new cloudwatch.Metric({
+          namespace: 'AWS/CodeBuild',
+          metricName: 'QueuedDuration',
+          statistic: 'avg',
+          label: 'Duration',
+          period: Duration.hours(1),
+        }),
+      ],
+      leftYAxis: {
+        min: 0,
+        max: 60,
+      },
+    });
+    const downloadDuration = new cloudwatch.GraphWidget({
+      title: 'Checkout Duration',
+      width: 24,
+      height: 5,
+      left: [
+        new cloudwatch.Metric({
+          namespace: 'AWS/CodeBuild',
+          metricName: 'DownloadSourceDuration',
+          statistic: 'max',
+          label: 'Duration',
+          period: Duration.minutes(5),
+          color: cloudwatch.Color.PURPLE,
+        }),
+      ],
+    });
     new cloudwatch.Dashboard(this, 'CICD_Dashboard', {
       dashboardName: 'CICD_Dashboard',
       widgets: [
         [
           buildRate,
+          buildsCount,
+          averageDuration,
+          queuedDuration,
+          downloadDuration,
         ],
       ],
     });
-
+    const failureTopic = new sns.Topic(this, "BuildFailure", {
+      displayName: "BuildFailure",
+    });
+    const emailSubscription = new subscriptions.EmailSubscription('carlos.a.torres.vargas@gmail.com');
+    failureTopic.addSubscription(emailSubscription);
+    // CloudWatch event rule triggered on pipeline failures
+    const pipelineFailureRule = new Rule(this, 'PipelineFailureRule', {
+      description: 'Notify on pipeline failures',
+      eventPattern: {
+        source: ['aws.codepipeline'],
+        detailType: ['CodePipeline Pipeline Execution State Change'],
+        detail: {
+          state: ['FAILED']
+        }
+      }
+    });
+    // Add SNS topic as a target
+    pipelineFailureRule.addTarget(new targets.SnsTopic(failureTopic, {
+      message: events.RuleTargetInput.fromText(`Pipeline Failure Detected! Pipeline: ${events.EventField.fromPath('$.detail.pipeline')}, Execution ID: ${events.EventField.fromPath('$.detail.execution-id')}`),
+    }));
   }
 }
